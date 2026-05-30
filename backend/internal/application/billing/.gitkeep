@@ -1,0 +1,2 @@
+// TODO Sprint 4: RegisterPaymentUseCase, GetCashFlowReportUseCase.
+// Toda operación de pago debe escribir en audit_log.

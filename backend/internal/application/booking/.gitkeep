@@ -1,0 +1,3 @@
+// TODO Sprint 3: CheckAvailabilityUseCase, ReserveCourtUseCase, CancelReservationUseCase.
+// ReserveCourtUseCase: validación en Go + manejo del error de EXCLUDE constraint de PostgreSQL.
+// CancelReservationUseCase: verificar que reservation.ClientID == userID del JWT (anti-IDOR).

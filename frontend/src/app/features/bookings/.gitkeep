@@ -1,0 +1,9 @@
+// TODO Sprint 3: el corazón del producto desde el punto de vista del cliente.
+//   availability.page.ts    → calendario de slots disponibles por cancha/fecha.
+//   create-booking.page.ts  → confirmar reserva (slot seleccionado + datos de pago).
+//   my-bookings.page.ts     → historial y reservas activas del cliente.
+//   cancel-booking.page.ts  → cancelar UNA reserva propia (confirmar antes de cancelar).
+//
+// UX crítico: disponibilidad en tiempo real — polling o WebSocket (decidir en Sprint 3).
+// Seguridad IDOR: la UI solo muestra las reservas del usuario logueado.
+//   El backend verifica en cada endpoint que client_id == JWT.sub.

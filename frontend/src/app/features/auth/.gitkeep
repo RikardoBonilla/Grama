@@ -1,0 +1,12 @@
+// TODO Sprint 1: páginas de autenticación.
+//   login.page.ts / login.page.html   → formulario email + contraseña para B2B y B2C.
+//   register.page.ts / register.page.html → registro de cliente (B2C).
+//
+// UX objetivo: un jugador sin experiencia técnica llega aquí desde un link compartido
+// y puede registrarse y hacer su primera reserva en menos de 3 minutos.
+//
+// Seguridad:
+//   - Desactivar autocompletar de contraseña solo si tiene sentido UX (no hacerlo por defecto).
+//   - Input de contraseña con toggle de visibilidad (mejor UX que oculto siempre).
+//   - Mensajes de error genéricos: "Email o contraseña incorrectos" — nunca revelar
+//     cuál de los dos es incorrecto (user enumeration).

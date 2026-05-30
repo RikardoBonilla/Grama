@@ -1,0 +1,6 @@
+// TODO Sprint 2: listado público de complejos y canchas.
+//   venue-list.page.ts   → buscar complejos por ciudad/zona.
+//   venue-detail.page.ts → ver canchas de un complejo, precios, horarios disponibles.
+//
+// Este módulo es PÚBLICO (no requiere autenticación para ver disponibilidad).
+// Solo al seleccionar una cancha y querer reservar se pide login.

@@ -1,0 +1,2 @@
+// TODO Sprint 2: CreateVenueUseCase, CreateCourtUseCase, ConfigureTimeSlotsUseCase.
+// Autorización por pertenencia: verificar que venue.OwnerID == userID del JWT.

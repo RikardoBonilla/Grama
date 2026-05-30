@@ -1,0 +1,3 @@
+// TODO Sprint 3: agregado Reservation.
+// Reglas anti-solapamiento, estados: pending → confirmed → cancelled.
+// ErrSlotNotAvailable como sentinel error de dominio.

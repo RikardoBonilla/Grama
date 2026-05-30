@@ -1,0 +1,4 @@
+// TODO Sprint 1:
+//   auth.go      → validar JWT con bloqueo estricto de alg:none. Extraer claims y añadir al context.
+//   security.go  → inyectar todos los security headers (CSP, HSTS, X-Frame-Options, etc.) y CORS.
+//   ratelimit.go → rate limiting por IP para endpoints sensibles (/login, /register, /reservations).

@@ -1,0 +1,11 @@
+// TODO Sprint 2: tests end-to-end.
+// Decisión pendiente: Cypress vs Playwright.
+//   - Cypress: mejor integración con Ionic, más fácil para empezar.
+//   - Playwright: más potente para multi-browser, más cercano a lo que usa la industria.
+// Justificar y decidir cuando lleguemos al Sprint 2.
+//
+// Tests E2E críticos que debemos tener para el MVP:
+//   1. Registro de usuario + login.
+//   2. Buscar cancha → ver disponibilidad → hacer reserva.
+//   3. Cancelar reserva propia.
+//   4. Intentar cancelar reserva ajena → debe rechazarse (test de IDOR en UI).

@@ -1,0 +1,4 @@
+// TODO: una interfaz Go por agregado de dominio.
+// Ejemplo: UserRepository, VenueRepository, ReservationRepository, PaymentRepository.
+// Las interfaces van aquí. Las implementaciones concretas van en infrastructure/persistence/postgres/.
+// Regla: ports/ solo importa de domain/. NUNCA de infrastructure/.

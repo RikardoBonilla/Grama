@@ -1,0 +1,22 @@
+-- Migration 003: reservations table
+-- TODO Sprint 3: el corazón del producto — la tabla de reservas.
+--
+-- Campos mínimos:
+--   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4()
+--   court_id    UUID NOT NULL REFERENCES courts(id)
+--   client_id   UUID NOT NULL REFERENCES users(id)
+--   time_range  TSTZRANGE NOT NULL                   ← rango de tiempo con timezone
+--   status      TEXT NOT NULL DEFAULT 'pending'
+--               CHECK (status IN ('pending', 'confirmed', 'cancelled'))
+--   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+--   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+--
+-- DEFENSA ANTI-DOBLE-RESERVA (la parte más importante de toda la DB):
+--   EXCLUDE USING gist (
+--     court_id WITH =,
+--     time_range WITH &&
+--   ) WHERE (status != 'cancelled');
+--
+-- Por qué el EXCLUDE: si dos transacciones concurrentes pasan la validación en Go,
+-- PostgreSQL rechaza la segunda con un error de constraint. Es la última línea de defensa.
+-- Requiere la extensión btree_gist (ya habilitada en init.sql).

@@ -1,0 +1,9 @@
+// TODO Sprint 4: panel de administración B2B (roles: owner, operator).
+//   dashboard.page.ts        → ocupación del día, ingresos del día.
+//   manage-courts.page.ts    → CRUD de canchas y precios (solo owner).
+//   register-payment.page.ts → registrar pago efectivo/transferencia de una reserva.
+//   cash-flow.page.ts        → reporte de ingresos por período.
+//
+// Autorización doble:
+//   1. RoleGuard en el router → solo owner/operator acceden a /admin.
+//   2. Backend verifica pertenencia → un operario de complejo A no puede ver datos de complejo B.

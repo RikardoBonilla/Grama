@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  security-and-quality:
+    name: Go — vet, test, gosec, govulncheck, trivy, sonar
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # SonarQube necesita historial completo
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+
+      # 1. Análisis estático básico — detecta errores de compilación y uso incorrecto
+      - name: go vet
+        run: go vet ./...
+
+      # 2. Tests con detector de race conditions — crucial para el bounded context de reservas
+      - name: go test (race detector)
+        run: go test ./... -race -coverprofile=coverage.out -covermode=atomic
+
+      # 3. gosec — detecta problemas de seguridad en código Go (SQL injection, crypto débil, etc.)
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: gosec scan
+        run: gosec ./...
+
+      # 4. govulncheck — verifica que las dependencias no tengan CVEs conocidos
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: govulncheck
+        run: govulncheck ./...
+
+      # 5. Trivy — escanea la imagen Docker por vulnerabilidades en el sistema operativo y paquetes
+      - name: Build Docker image
+        run: docker build -t grama-backend:ci .
+
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "grama-backend:ci"
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"
+
+      # 6. SonarQube Quality Gate — análisis de calidad y security hotspots
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

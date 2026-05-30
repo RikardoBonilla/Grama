@@ -1,0 +1,29 @@
+{
+  "name": "grama-frontend",
+  "version": "0.1.0",
+  "description": "Grama — Plataforma de reservas de canchas sintéticas (Ionic + Angular)",
+  "private": true,
+  "scripts": {
+    "start": "ionic serve",
+    "build": "ionic build --prod",
+    "build:android": "ionic capacitor build android",
+    "build:ios": "ionic capacitor build ios",
+    "lint": "ng lint",
+    "test": "ng test --coverage",
+    "e2e": "ng e2e",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@angular/common": "TODO: latest stable",
+    "@angular/core": "TODO: latest stable",
+    "@ionic/angular": "TODO: latest stable",
+    "@capacitor/core": "TODO: latest stable",
+    "@capacitor/android": "TODO: latest stable",
+    "@capacitor/ios": "TODO: latest stable"
+  },
+  "devDependencies": {
+    "@angular/cli": "TODO: latest stable",
+    "@ionic/cli": "TODO: latest stable",
+    "typescript": "TODO: latest stable compatible"
+  }
+}

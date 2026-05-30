@@ -1,0 +1,25 @@
+# === Agente privado — NO subir a git ===
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+
+# === Secretos ===
+.env
+*.env
+!.env.example
+
+# === Go ===
+/backend/bin/
+*.test
+*.out
+coverage.out
+coverage.html
+
+# === Docker / datos locales ===
+/infrastructure/postgres/data/
+
+# === OS / IDE ===
+.DS_Store
+.idea/
+.vscode/
+*.log

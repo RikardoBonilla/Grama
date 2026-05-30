@@ -1,0 +1,6 @@
+-- Migration 002: venues and courts tables
+-- TODO Sprint 2: crear tablas venues y courts.
+-- venues: id, owner_id (FK users), name, address, phone, created_at, updated_at
+-- courts: id, venue_id (FK venues), name, court_type (TEXT CHECK), size, is_covered, price_per_hour (INTEGER — centavos), created_at, updated_at
+-- Seguridad: CHECK en court_type para evitar valores arbitrarios.
+-- IDs: UUID siempre, nunca BIGSERIAL.

@@ -1,0 +1,8 @@
+// TODO: componentes, pipes y directivas reutilizables entre features.
+// Ejemplos esperados:
+//   loading-spinner.component.ts  → estado de carga (obligatorio en toda operación async).
+//   error-banner.component.ts     → mensaje de error visible al usuario.
+//   time-slot-picker.component.ts → selector visual de franja horaria (usado en bookings y admin).
+//   currency.pipe.ts              → formatear centavos a pesos colombianos "$50.000".
+//
+// Regla: si un componente solo se usa en UNA feature, va dentro de esa feature, no aquí.

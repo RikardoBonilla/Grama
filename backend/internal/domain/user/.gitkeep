@@ -1,0 +1,2 @@
+// TODO Sprint 1: entidad User (Argon2id), value objects Email y Password.
+// Reutilizado y adaptado de Acacio. Roles: owner, operator, client.
