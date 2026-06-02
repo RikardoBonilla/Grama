@@ -1,29 +1,35 @@
-version: "3.9"
-
 services:
-  grama_postgres:
+  postgres:
     image: postgres:16-alpine
     container_name: grama_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      # Bind solo a localhost — NUNCA exponer a 0.0.0.0 (regla de seguridad de red)
+      # Bind ONLY to localhost — never 0.0.0.0 or bare port mapping.
+      # This blocks access from LAN and other Docker networks.
       - "127.0.0.1:5433:5432"
     volumes:
       - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
-      - ./infrastructure/postgres/data:/var/lib/postgresql/data
+      - grama_pg_data:/var/lib/postgresql/data
+    networks:
+      - grama_net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 15s
 
-  # TODO: agregar servicio backend Go en Sprint 0
-  # TODO: agregar servicio nginx en Sprint 4 (deploy)
+  # TODO GRAM-7: add grama_api service (Go backend)
+  # TODO GRAM-?: add nginx service (Sprint 4, deploy)
+
+volumes:
+  grama_pg_data:
+    driver: local
 
 networks:
-  default:
-    name: grama_network
+  grama_net:
+    driver: bridge
