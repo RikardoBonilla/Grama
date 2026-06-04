@@ -26,8 +26,46 @@ services:
   # TODO GRAM-7: add grama_api service (Go backend)
   # TODO GRAM-?: add nginx service (Sprint 4, deploy)
 
+  sonarqube:
+    image: sonarqube:10-community
+    container_name: grama_sonarqube
+    restart: unless-stopped
+    # Elasticsearch (embedded in SonarQube) needs high open-file limits.
+    # On Linux VPS run once: sysctl -w vm.max_map_count=524288
+    # Docker Desktop on macOS sets this automatically inside its Linux VM.
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    ports:
+      # Bind ONLY to localhost — never expose SonarQube to the public internet.
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    networks:
+      - grama_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/api/system/status | grep -q '\"status\":\"UP\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
 volumes:
   grama_pg_data:
+    driver: local
+  sonarqube_data:
+    driver: local
+  sonarqube_logs:
+    driver: local
+  sonarqube_extensions:
     driver: local
 
 networks:
