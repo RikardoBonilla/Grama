@@ -1,5 +1,0 @@
-// TODO: un archivo de repositorio por agregado.
-// Ejemplo: user_repository.go, venue_repository.go, reservation_repository.go.
-// Patrón OBLIGATORIO: reconstruir entidades con Reconstitute(), nunca con NewX().
-// Razón: Reconstitute() no ejecuta validaciones de negocio ni re-hashea contraseñas.
-// Todas las queries DEBEN ser parametrizadas ($1, $2...). NUNCA fmt.Sprintf con input del usuario.
