@@ -8,10 +8,6 @@ import (
 	"github.com/praxisvr/grama/internal/infrastructure/auth"
 )
 
-type contextKey string
-
-const claimsKey contextKey = "auth_claims"
-
 // AuthMiddleware validates JWT access tokens on protected routes.
 type AuthMiddleware struct {
 	jwtManager *auth.JWTManager
@@ -38,13 +34,12 @@ func (m *AuthMiddleware) Require(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), claimsKey, claims)
+		ctx := auth.NewContextWithClaims(r.Context(), claims)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-// ClaimsFromContext extracts JWT claims injected by AuthMiddleware.Require.
+// ClaimsFromContext delegates to auth.ClaimsFromContext for backward compatibility.
 func ClaimsFromContext(ctx context.Context) (*auth.Claims, bool) {
-	claims, ok := ctx.Value(claimsKey).(*auth.Claims)
-	return claims, ok
+	return auth.ClaimsFromContext(ctx)
 }
