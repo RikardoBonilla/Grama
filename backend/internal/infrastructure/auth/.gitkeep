@@ -1,4 +1,0 @@
-// TODO Sprint 1: JWTService — generar y validar tokens.
-// Validación estricta de algoritmo: rechazar cualquier token que no sea HS256.
-// El header "alg" del JWT puede ser manipulado por un atacante para poner "none"
-// y saltarse la verificación de firma. Debemos validar explícitamente el algoritmo esperado.

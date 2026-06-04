@@ -1,3 +1,0 @@
-// TODO Sprint 1: RegisterUserUseCase, LoginUseCase, RefreshTokenUseCase.
-// Los casos de uso reciben interfaces (ports), nunca implementaciones concretas.
-// La inyección de dependencias ocurre en main.go.
