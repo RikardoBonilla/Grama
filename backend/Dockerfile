@@ -5,7 +5,7 @@
 # El proceso corre como "nobody" (UID 65534) — nunca como root.
 
 # Stage 1: compilar
-FROM golang:1.22-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /build
 

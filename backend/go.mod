@@ -1,9 +1,16 @@
 module github.com/praxisvr/grama
 
-go 1.22
+go 1.25.0
 
-// TODO Sprint 0: ejecutar `go get` para agregar dependencias reales:
-//   github.com/jackc/pgx/v5
-//   github.com/google/uuid
-//   golang.org/x/crypto
-//   github.com/golang-jwt/jwt/v5
+require (
+	github.com/golang-jwt/jwt/v5 v5.3.1
+	github.com/google/uuid v1.6.0
+	github.com/jackc/pgx/v5 v5.10.0
+	golang.org/x/crypto v0.52.0
+)
+
+require (
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	golang.org/x/text v0.37.0 // indirect
+)
