@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "grama-frontend": {
+    "app": {
       "projectType": "application",
       "root": "",
       "sourceRoot": "src",
@@ -14,6 +14,7 @@
             "outputPath": "www",
             "index": "src/index.html",
             "main": "src/main.ts",
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.json",
             "assets": ["src/assets"],
             "styles": ["src/theme/variables.scss", "src/global.scss"]

@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+www/
+dist/
+
+# Capacitor native projects (generated — not source of truth)
+android/
+ios/
+
+# Test coverage
+coverage/
+
+# Angular CLI cache
+.angular/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.log
