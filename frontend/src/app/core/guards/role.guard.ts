@@ -1,13 +1,21 @@
-// TODO Sprint 1: RoleGuard — protege rutas según el rol del usuario autenticado.
-//
-// Comportamiento:
-//   - Lee el claim `role` del JWT del AuthService (nunca del JWT crudo del storage).
-//   - Si el rol coincide con los permitidos en la ruta → permite la navegación.
-//   - Si no → redirige a /unauthorized (403 page).
-//
-// Uso en el router:
-//   { path: 'admin', component: AdminPage, canActivate: [authGuard, roleGuard],
-//     data: { roles: ['owner', 'operator'] } }
-//
-// Seguridad: este guard es solo UX — la AUTORIZACIÓN REAL siempre ocurre en el backend.
-//   Un atacante puede bypassear guards del frontend; el backend debe verificar el rol en cada request.
+import { CanActivateFn, ActivatedRouteSnapshot, Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { AuthService } from '../auth/auth.service';
+
+export const roleGuard: CanActivateFn = async (route: ActivatedRouteSnapshot) => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  const user = await auth.getCurrentUser();
+  if (!user) {
+    router.navigate(['/login']);
+    return false;
+  }
+
+  const required: string = route.data['role'] ?? '';
+  if (required && user.role !== required) {
+    router.navigate(['/403']);
+    return false;
+  }
+  return true;
+};

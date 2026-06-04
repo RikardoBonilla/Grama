@@ -1,8 +1,15 @@
-// TODO Sprint 1: AuthGuard — protege rutas que requieren estar autenticado.
-//
-// Comportamiento:
-//   - Si el usuario tiene sesión activa → permite la navegación.
-//   - Si no → redirige a /auth/login y guarda la URL intentada (returnUrl)
-//     para redirigir después del login exitoso.
-//
-// Implementar como función (Angular 17+ usa functional guards, no clases CanActivate).
+import { CanActivateFn, Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { AuthService } from '../auth/auth.service';
+
+export const authGuard: CanActivateFn = async () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  const authenticated = await auth.isAuthenticated();
+  if (!authenticated) {
+    router.navigate(['/login']);
+    return false;
+  }
+  return true;
+};
