@@ -1,55 +1,110 @@
 name: CI
 
 on:
-  push:
-    branches: [main, develop]
   pull_request:
     branches: [main, develop]
 
 jobs:
-  security-and-quality:
-    name: Go — vet, test, gosec, govulncheck, trivy, sonar
+  # ── 1. Análisis estático básico ───────────────────────────────────────────
+  # go vet detecta errores de compilación y uso incorrecto de la API de Go.
+  # gofmt verifica que el código tenga formato canónico (sin tabs vs espacios raros).
+  lint:
+    name: Lint (go vet + gofmt)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # SonarQube necesita historial completo
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
           cache: true
 
-      # 1. Análisis estático básico — detecta errores de compilación y uso incorrecto
       - name: go vet
         run: go vet ./...
 
-      # 2. Tests con detector de race conditions — crucial para el bounded context de reservas
-      - name: go test (race detector)
+      - name: gofmt check
+        # gofmt exits 0 even with differences; we check stdout instead.
+        run: |
+          DIFF=$(gofmt -l .)
+          if [ -n "$DIFF" ]; then
+            echo "These files need gofmt:"
+            echo "$DIFF"
+            exit 1
+          fi
+
+  # ── 2. Tests con race detector ────────────────────────────────────────────
+  # -race detecta condiciones de carrera — crítico para el bounded context de
+  # reservas donde dos requests pueden competir por el mismo slot.
+  # El coverage report lo consumen los jobs sonar y el QG de cobertura.
+  test:
+    name: Tests (race detector + coverage)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+
+      - name: go test
         run: go test ./... -race -coverprofile=coverage.out -covermode=atomic
 
-      # 3. gosec — detecta problemas de seguridad en código Go (SQL injection, crypto débil, etc.)
+      # Persiste el coverage report para que el job sonar lo use en otro job.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/coverage.out
+          retention-days: 1
+
+  # ── 3. Seguridad estática ─────────────────────────────────────────────────
+  # gosec: detecta problemas de seguridad en código Go (SQL injection sin
+  #        parámetros, crypto débil, permisos de archivo inseguros, etc.)
+  # govulncheck: comprueba que ninguna dependencia tenga CVEs conocidos.
+  security-static:
+    name: Security static (gosec + govulncheck)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+
       - name: Install gosec
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
 
       - name: gosec scan
         run: gosec ./...
 
-      # 4. govulncheck — verifica que las dependencias no tengan CVEs conocidos
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
 
       - name: govulncheck
         run: govulncheck ./...
 
-      # 5. Trivy — escanea la imagen Docker por vulnerabilidades en el sistema operativo y paquetes
+  # ── 4. Escaneo de imagen Docker ───────────────────────────────────────────
+  # Trivy busca CVEs en el sistema operativo base y las dependencias Go
+  # dentro de la imagen final (scratch + binario estático).
+  # exit-code 1 bloquea el merge si hay vulnerabilidades CRITICAL o HIGH.
+  security-image:
+    name: Security image (docker build + trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Build Docker image
-        run: docker build -t grama-backend:ci .
+        run: docker build -t grama-backend:ci ./backend
 
       - name: Trivy image scan
         uses: aquasecurity/trivy-action@master
@@ -59,9 +114,31 @@ jobs:
           exit-code: "1"
           severity: "CRITICAL,HIGH"
 
-      # 6. SonarQube Quality Gate — análisis de calidad y security hotspots
+  # ── 5. SonarQube Quality Gate ─────────────────────────────────────────────
+  # Analiza calidad, duplicación y security hotspots.
+  # Necesita el coverage.out generado por el job test.
+  # Bloquea el merge si el Quality Gate configurado en la instancia falla.
+  sonar:
+    name: SonarQube Quality Gate
+    runs-on: ubuntu-latest
+    needs: test
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
+        with:
+          projectBaseDir: backend
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
