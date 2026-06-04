@@ -68,6 +68,50 @@ func (r *PostgresUserRepository) FindByID(ctx context.Context, id string) (*doma
 	return r.scanUser(ctx, selectUserCols+"id = $1", id)
 }
 
+func (r *PostgresUserRepository) UpdateName(ctx context.Context, id, name string) error {
+	_, err := r.pool.Exec(ctx,
+		"UPDATE users SET name = $1 WHERE id = $2",
+		name, id,
+	)
+	if err != nil {
+		return fmt.Errorf("update user name: %w", err)
+	}
+	return nil
+}
+
+func (r *PostgresUserRepository) FindByRole(ctx context.Context, role string) ([]*domainuser.User, error) {
+	rows, err := r.pool.Query(ctx, selectUserCols+"role = $1", role)
+	if err != nil {
+		return nil, fmt.Errorf("find by role: %w", err)
+	}
+	defer rows.Close()
+
+	var users []*domainuser.User
+	for rows.Next() {
+		var (
+			id, name, email, passwordHashHex, rowRole string
+			consentGiven                               bool
+			consentGivenAt                             *time.Time
+			createdAt, updatedAt                       time.Time
+		)
+		if err := rows.Scan(
+			&id, &name, &email, &passwordHashHex, &rowRole,
+			&consentGiven, &consentGivenAt, &createdAt, &updatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan user row: %w", err)
+		}
+		var consentAt time.Time
+		if consentGivenAt != nil {
+			consentAt = *consentGivenAt
+		}
+		users = append(users, domainuser.Reconstitute(
+			id, name, email, passwordHashHex, rowRole,
+			consentGiven, consentAt, createdAt, updatedAt,
+		))
+	}
+	return users, rows.Err()
+}
+
 func (r *PostgresUserRepository) scanUser(ctx context.Context, query string, arg any) (*domainuser.User, error) {
 	row := r.pool.QueryRow(ctx, query, arg)
 

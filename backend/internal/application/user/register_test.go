@@ -10,16 +10,19 @@ import (
 )
 
 // mockUserRepo is a simple in-memory UserRepository for unit tests.
+// All test files in this package share this mock via package user_test.
 type mockUserRepo struct {
-	users  map[string]*domainuser.User
-	emails map[string]*domainuser.User
-	err    error // if set, Create returns this error
+	users    map[string]*domainuser.User
+	emails   map[string]*domainuser.User
+	nameLog  map[string]string // tracks UpdateName calls: id -> newName
+	err      error             // if set, Create returns this error
 }
 
 func newMockUserRepo() *mockUserRepo {
 	return &mockUserRepo{
-		users:  make(map[string]*domainuser.User),
-		emails: make(map[string]*domainuser.User),
+		users:   make(map[string]*domainuser.User),
+		emails:  make(map[string]*domainuser.User),
+		nameLog: make(map[string]string),
 	}
 }
 
@@ -44,6 +47,24 @@ func (m *mockUserRepo) FindByID(_ context.Context, id string) (*domainuser.User,
 		return u, nil
 	}
 	return nil, domainuser.ErrUserNotFound
+}
+
+func (m *mockUserRepo) UpdateName(_ context.Context, id, name string) error {
+	if m.err != nil {
+		return m.err
+	}
+	m.nameLog[id] = name
+	return nil
+}
+
+func (m *mockUserRepo) FindByRole(_ context.Context, role string) ([]*domainuser.User, error) {
+	var result []*domainuser.User
+	for _, u := range m.users {
+		if u.Role() == role {
+			result = append(result, u)
+		}
+	}
+	return result, nil
 }
 
 func TestRegisterUser_Valid_Owner(t *testing.T) {

@@ -21,9 +21,9 @@ import (
 
 func main() {
 	// Config — fail fast on missing required env vars.
-	dbDSN := requireEnv("GRAMA_DB_DSN")
+	dbDSN     := requireEnv("GRAMA_DB_DSN")
 	jwtSecret := requireEnv("JWT_SECRET")
-	port := getEnv("SERVER_PORT", "8080")
+	port      := getEnv("SERVER_PORT", "8080")
 
 	// Database connection pool.
 	ctx := context.Background()
@@ -42,18 +42,23 @@ func main() {
 	userRepo  := postgres.NewPostgresUserRepository(pool)
 	tokenRepo := postgres.NewPostgresTokenRepository(pool)
 
-	// JWT manager (infrastructure layer).
+	// JWT manager.
 	jwtManager := infraauth.NewJWTManager(jwtSecret)
 
-	// Use cases (application layer). Each use case receives interfaces, never concrete types.
-	registerUC := user.NewRegisterUseCase(userRepo)
-	loginUC    := user.NewLoginUseCase(userRepo, tokenRepo, jwtManager)
-	refreshUC  := user.NewRefreshUseCase(userRepo, tokenRepo, jwtManager)
+	// Use cases (application layer). Each receives interfaces, never concrete types.
+	registerUC    := user.NewRegisterUseCase(userRepo)
+	loginUC       := user.NewLoginUseCase(userRepo, tokenRepo, jwtManager)
+	refreshUC     := user.NewRefreshUseCase(userRepo, tokenRepo, jwtManager)
+	getProfileUC  := user.NewGetProfileUseCase(userRepo)
+	updateProfileUC := user.NewUpdateProfileUseCase(userRepo)
+	createOpUC    := user.NewCreateOperatorUseCase(userRepo)
+	listOpsUC     := user.NewListOperatorsUseCase(userRepo)
 
 	// HTTP layer.
-	authHandler := handler.NewAuthHandler(registerUC, loginUC, refreshUC, tokenRepo)
 	authMW      := middleware.NewAuthMiddleware(jwtManager)
-	router      := infrahttp.NewRouter(authHandler, authMW)
+	authHandler := handler.NewAuthHandler(registerUC, loginUC, refreshUC, tokenRepo)
+	userHandler := handler.NewUserHandler(getProfileUC, updateProfileUC, createOpUC, listOpsUC)
+	router      := infrahttp.NewRouter(authHandler, userHandler, authMW)
 
 	// HTTP server with sensible timeouts (OWASP recommendation).
 	srv := &http.Server{
@@ -64,7 +69,6 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// Start server in a goroutine so we can listen for OS signals.
 	go func() {
 		log.Printf("Grama API listening on :%s", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
