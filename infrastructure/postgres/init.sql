@@ -1,37 +1,33 @@
--- init.sql — Inicialización de la base de datos Grama
--- Este archivo se ejecuta UNA sola vez cuando el contenedor se crea por primera vez.
--- Las migraciones incrementales van en migrations/.
+-- init.sql - Database initialization for Grama
+-- Runs ONCE when the container volume is empty (docker-entrypoint-initdb.d).
+-- Executed as POSTGRES_USER (grama_admin superuser).
+-- Role and grant setup lives in 02_roles.sh (needs env vars).
 
--- TODO Sprint 0: implementar este archivo completo.
--- Contenido esperado:
---   1. Extensiones requeridas.
---   2. Rol grama_user con permisos mínimos.
---   3. Trigger update_updated_at_column() reutilizable.
---   4. Tabla audit_log para operaciones sensibles.
+-- Extensions ------------------------------------------------------------------
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";  -- uuid_generate_v4()
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";   -- gen_random_bytes(), crypt()
+CREATE EXTENSION IF NOT EXISTS "btree_gist"; -- EXCLUDE constraint on reservations
 
--- TODO: extensiones (ejecutar como superuser antes de crear grama_user)
--- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";   -- uuid_generate_v4()
--- CREATE EXTENSION IF NOT EXISTS "pgcrypto";    -- gen_random_bytes(), crypt()
--- CREATE EXTENSION IF NOT EXISTS "btree_gist";  -- EXCLUDE constraint en reservas
+-- Shared trigger function for updated_at --------------------------------------
+-- Every table that has updated_at attaches this trigger.
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
--- TODO: crear rol de la aplicación con permisos mínimos
--- CREATE ROLE grama_user WITH LOGIN PASSWORD 'CHANGE_ME';
--- GRANT CONNECT ON DATABASE grama_db TO grama_user;
--- GRANT USAGE ON SCHEMA public TO grama_user;
--- GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO grama_user;
--- NOTA: sin DELETE, sin DDL, sin TRUNCATE — principio de mínimo privilegio.
-
--- TODO: función trigger para updated_at automático
--- CREATE OR REPLACE FUNCTION update_updated_at_column() ...
-
--- TODO: tabla audit_log
--- CREATE TABLE audit_log (
---   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---   table_name  TEXT NOT NULL,
---   record_id   UUID NOT NULL,
---   action      TEXT NOT NULL CHECK (action IN ('INSERT', 'UPDATE', 'DELETE')),
---   actor_id    UUID,
---   old_data    JSONB,
---   new_data    JSONB,
---   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
--- );
+-- Audit log -------------------------------------------------------------------
+-- Append-only table for sensitive operations (reservations, payments, role changes).
+-- grama_user may INSERT but never UPDATE or DELETE records here.
+CREATE TABLE IF NOT EXISTS audit_log (
+    id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+    table_name TEXT        NOT NULL,
+    record_id  UUID        NOT NULL,
+    action     TEXT        NOT NULL CHECK (action IN ('INSERT', 'UPDATE', 'DELETE')),
+    actor_id   UUID,
+    old_data   JSONB,
+    new_data   JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
