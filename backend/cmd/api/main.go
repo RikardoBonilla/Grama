@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -24,6 +25,7 @@ func main() {
 	dbDSN := requireEnv("GRAMA_DB_DSN")
 	jwtSecret := requireEnv("JWT_SECRET")
 	port := getEnv("SERVER_PORT", "8080")
+	allowedOrigins := parseOrigins(getEnv("ALLOWED_ORIGINS", "http://localhost:8100"))
 
 	// Database connection pool.
 	ctx := context.Background()
@@ -58,7 +60,7 @@ func main() {
 	authMW := middleware.NewAuthMiddleware(jwtManager)
 	authHandler := handler.NewAuthHandler(registerUC, loginUC, refreshUC, tokenRepo)
 	userHandler := handler.NewUserHandler(getProfileUC, updateProfileUC, createOpUC, listOpsUC)
-	router := infrahttp.NewRouter(authHandler, userHandler, authMW)
+	router := infrahttp.NewRouter(authHandler, userHandler, authMW, allowedOrigins)
 
 	// HTTP server with sensible timeouts (OWASP recommendation).
 	srv := &http.Server{
@@ -103,4 +105,27 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func parseOrigins(raw string) []string {
+	var origins []string
+	for _, o := range splitComma(raw) {
+		if o != "" {
+			origins = append(origins, o)
+		}
+	}
+	return origins
+}
+
+func splitComma(s string) []string {
+	var parts []string
+	start := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == ',' {
+			parts = append(parts, strings.TrimSpace(s[start:i]))
+			start = i + 1
+		}
+	}
+	parts = append(parts, strings.TrimSpace(s[start:]))
+	return parts
 }

@@ -10,11 +10,12 @@ import (
 )
 
 // NewRouter builds the HTTP multiplexer and registers all routes.
-// Middleware order: security headers -> rate limit -> auth -> role -> handlers.
+// Middleware order: CORS -> rate limit -> auth -> role -> handlers.
 func NewRouter(
 	authHandler *handler.AuthHandler,
 	userHandler *handler.UserHandler,
 	authMW *middleware.AuthMiddleware,
+	allowedOrigins []string,
 ) stdhttp.Handler {
 	mux := stdhttp.NewServeMux()
 
@@ -51,5 +52,7 @@ func NewRouter(
 		}
 	})
 
-	return mux
+	// CORS must wrap the entire mux so preflight OPTIONS requests are handled
+	// before any auth or rate-limit check rejects them.
+	return middleware.CORS(allowedOrigins)(mux)
 }

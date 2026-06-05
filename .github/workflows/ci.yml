@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.26"
+          go-version: "1.26.4"
           cache: true
 
       - name: go vet
@@ -50,7 +50,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.26"
+          go-version: "1.26.4"
           cache: true
 
       - name: go test
@@ -78,7 +78,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.26"
+          go-version: "1.26.4"
           cache: true
 
       - name: Install gosec
@@ -117,11 +117,18 @@ jobs:
   # ── 5. SonarQube Quality Gate ─────────────────────────────────────────────
   # Analiza calidad, duplicación y security hotspots.
   # Necesita el coverage.out generado por el job test.
-  # Bloquea el merge si el Quality Gate configurado en la instancia falla.
+  #
+  # IMPORTANTE: SONAR_HOST_URL apunta a localhost:9000 (instancia local).
+  # GitHub Actions no puede alcanzar una URL local, por lo que este job
+  # falla de conexion fuera del entorno de desarrollo.
+  # Sprint 4 (deploy a VPS) lo convierte en un Quality Gate real bloqueante
+  # usando SonarCloud o una URL publica del servidor SonarQube.
+  # Por ahora continue-on-error: true para no bloquear los PRs.
   sonar:
     name: SonarQube Quality Gate
     runs-on: ubuntu-latest
     needs: test
+    continue-on-error: true
     defaults:
       run:
         working-directory: backend
