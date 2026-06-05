@@ -90,9 +90,9 @@ func (r *PostgresUserRepository) FindByRole(ctx context.Context, role string) ([
 	for rows.Next() {
 		var (
 			id, name, email, passwordHashHex, rowRole string
-			consentGiven                               bool
-			consentGivenAt                             *time.Time
-			createdAt, updatedAt                       time.Time
+			consentGiven                              bool
+			consentGivenAt                            *time.Time
+			createdAt, updatedAt                      time.Time
 		)
 		if err := rows.Scan(
 			&id, &name, &email, &passwordHashHex, &rowRole,
@@ -117,9 +117,9 @@ func (r *PostgresUserRepository) scanUser(ctx context.Context, query string, arg
 
 	var (
 		id, name, email, passwordHashHex, role string
-		consentGiven                            bool
-		consentGivenAt                          *time.Time
-		createdAt, updatedAt                    time.Time
+		consentGiven                           bool
+		consentGivenAt                         *time.Time
+		createdAt, updatedAt                   time.Time
 	)
 
 	err := row.Scan(

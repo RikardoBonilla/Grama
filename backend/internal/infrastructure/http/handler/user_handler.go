@@ -11,10 +11,10 @@ import (
 
 // UserHandler handles profile and operator management endpoints.
 type UserHandler struct {
-	getProfileUC   *appuser.GetProfileUseCase
+	getProfileUC    *appuser.GetProfileUseCase
 	updateProfileUC *appuser.UpdateProfileUseCase
-	createOpUC     *appuser.CreateOperatorUseCase
-	listOpsUC      *appuser.ListOperatorsUseCase
+	createOpUC      *appuser.CreateOperatorUseCase
+	listOpsUC       *appuser.ListOperatorsUseCase
 }
 
 func NewUserHandler(
