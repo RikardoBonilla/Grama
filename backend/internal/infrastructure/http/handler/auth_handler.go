@@ -3,10 +3,11 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
-	domainuser "github.com/praxisvr/grama/internal/domain/user"
 	appuser "github.com/praxisvr/grama/internal/application/user"
+	domainuser "github.com/praxisvr/grama/internal/domain/user"
 	"github.com/praxisvr/grama/internal/infrastructure/auth"
 	"github.com/praxisvr/grama/internal/infrastructure/http/middleware"
 	"github.com/praxisvr/grama/internal/ports/repository"
@@ -173,5 +174,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 func writeJSON(w http.ResponseWriter, status int, body any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(body)
+	if err := json.NewEncoder(w).Encode(body); err != nil {
+		log.Printf("writeJSON encode: %v", err)
+	}
 }

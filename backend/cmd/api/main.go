@@ -22,9 +22,9 @@ import (
 
 func main() {
 	// Config — fail fast on missing required env vars.
-	dbDSN          := requireEnv("GRAMA_DB_DSN")
-	jwtSecret      := requireEnv("JWT_SECRET")
-	port           := getEnv("SERVER_PORT", "8080")
+	dbDSN := requireEnv("GRAMA_DB_DSN")
+	jwtSecret := requireEnv("JWT_SECRET")
+	port := getEnv("SERVER_PORT", "8080")
 	allowedOrigins := parseOrigins(getEnv("ALLOWED_ORIGINS", "http://localhost:8100"))
 
 	// Database connection pool.
@@ -41,26 +41,26 @@ func main() {
 	log.Println("database connected")
 
 	// Repositories (infrastructure layer).
-	userRepo  := postgres.NewPostgresUserRepository(pool)
+	userRepo := postgres.NewPostgresUserRepository(pool)
 	tokenRepo := postgres.NewPostgresTokenRepository(pool)
 
 	// JWT manager.
 	jwtManager := infraauth.NewJWTManager(jwtSecret)
 
 	// Use cases (application layer). Each receives interfaces, never concrete types.
-	registerUC    := user.NewRegisterUseCase(userRepo)
-	loginUC       := user.NewLoginUseCase(userRepo, tokenRepo, jwtManager)
-	refreshUC     := user.NewRefreshUseCase(userRepo, tokenRepo, jwtManager)
-	getProfileUC  := user.NewGetProfileUseCase(userRepo)
+	registerUC := user.NewRegisterUseCase(userRepo)
+	loginUC := user.NewLoginUseCase(userRepo, tokenRepo, jwtManager)
+	refreshUC := user.NewRefreshUseCase(userRepo, tokenRepo, jwtManager)
+	getProfileUC := user.NewGetProfileUseCase(userRepo)
 	updateProfileUC := user.NewUpdateProfileUseCase(userRepo)
-	createOpUC    := user.NewCreateOperatorUseCase(userRepo)
-	listOpsUC     := user.NewListOperatorsUseCase(userRepo)
+	createOpUC := user.NewCreateOperatorUseCase(userRepo)
+	listOpsUC := user.NewListOperatorsUseCase(userRepo)
 
 	// HTTP layer.
-	authMW      := middleware.NewAuthMiddleware(jwtManager)
+	authMW := middleware.NewAuthMiddleware(jwtManager)
 	authHandler := handler.NewAuthHandler(registerUC, loginUC, refreshUC, tokenRepo)
 	userHandler := handler.NewUserHandler(getProfileUC, updateProfileUC, createOpUC, listOpsUC)
-	router      := infrahttp.NewRouter(authHandler, userHandler, authMW, allowedOrigins)
+	router := infrahttp.NewRouter(authHandler, userHandler, authMW, allowedOrigins)
 
 	// HTTP server with sensible timeouts (OWASP recommendation).
 	srv := &http.Server{
