@@ -1,6 +1,7 @@
 package http
 
 import (
+	"log"
 	stdhttp "net/http"
 	"time"
 
@@ -18,7 +19,7 @@ func NewRouter(
 	mux := stdhttp.NewServeMux()
 
 	// Rate limiters for credential endpoints (5 req/min per IP).
-	authLimiter  := middleware.NewIPRateLimiter(5, time.Minute)
+	authLimiter := middleware.NewIPRateLimiter(5, time.Minute)
 	loginLimiter := middleware.NewIPRateLimiter(5, time.Minute)
 
 	// Auth endpoints.
@@ -45,7 +46,9 @@ func NewRouter(
 
 	mux.HandleFunc("GET /health", func(w stdhttp.ResponseWriter, _ *stdhttp.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"status":"ok"}`))
+		if _, err := w.Write([]byte(`{"status":"ok"}`)); err != nil {
+			log.Printf("health write: %v", err)
+		}
 	})
 
 	return mux
