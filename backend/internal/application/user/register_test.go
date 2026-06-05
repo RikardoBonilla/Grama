@@ -5,17 +5,17 @@ import (
 	"errors"
 	"testing"
 
-	domainuser "github.com/praxisvr/grama/internal/domain/user"
 	appuser "github.com/praxisvr/grama/internal/application/user"
+	domainuser "github.com/praxisvr/grama/internal/domain/user"
 )
 
 // mockUserRepo is a simple in-memory UserRepository for unit tests.
 // All test files in this package share this mock via package user_test.
 type mockUserRepo struct {
-	users    map[string]*domainuser.User
-	emails   map[string]*domainuser.User
-	nameLog  map[string]string // tracks UpdateName calls: id -> newName
-	err      error             // if set, Create returns this error
+	users   map[string]*domainuser.User
+	emails  map[string]*domainuser.User
+	nameLog map[string]string // tracks UpdateName calls: id -> newName
+	err     error             // if set, Create returns this error
 }
 
 func newMockUserRepo() *mockUserRepo {
